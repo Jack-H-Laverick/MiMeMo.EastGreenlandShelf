@@ -1,0 +1,10 @@
+/Data
+/Figures
+/Objects
+/Old data
+/results
+/StrathE2E
+/Analyses
+*.png
+*.html
+.Rproj.user
