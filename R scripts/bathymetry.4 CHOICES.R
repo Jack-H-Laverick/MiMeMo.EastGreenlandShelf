@@ -11,17 +11,6 @@ lapply(c(Tidy_packages, Geo_packages), library, character.only = TRUE)      # Lo
 source("./R scripts/@_Region file.R")                                       # Define project region 
 plan(multiprocess)                                                          # Choose the method to parallelise by with furrr
 
-# reduce_resolution <- 5
-# 
-# Bathymetry <- readRDS("./Objects/Bathymetry_points.rds") %>%                # Get bathymetry
-#   group_by(Latitude) %>%                                                    # Reduce resolution
-#   slice(seq(1, n(), by = reduce_resolution)) %>%                            # Reduce resolution
-#   ungroup() %>%                                                             # Reduce resolution
-#   group_by(Longitude) %>%                                                   # Reduce resolution
-#   slice(seq(1, n(), by = reduce_resolution)) %>%                            # Reduce resolution
-#   ungroup %>%                                                               # Reduce resolution
-#   filter(between(Elevation, -1000, 0))                                      # Clip area
-
 Bathymetry <- readRDS("./Objects/Bathymetry_points.rds") %>%                # Get bathymetry
   .[seq(1, nrow(.), 16),] %>%                                               # Reduce resolution for plotting speed
   filter(between(Elevation, -1000, 0))  
@@ -63,22 +52,17 @@ ggsave_map("./Figures/bathymetry/Distance from shore.png", distance_plot)
 
 #### Highlight areas between bathymetry limits ####
 
-#Bathymetry <- st_as_stars(Bathymetry)                                       # Convert to stars to get cells instead of points
-#st_crs(Bathymetry) <- st_crs(4326)                                          # set lat-lon crs
-
-#Bathymetry <- st_as_sf(Bathymetry, as_points = F, merge = F)                # Convert the stars grid into SF polygons which can be merged
-
 combos <- expand.grid(Shallow = c(-10,-20,-30,-40), 
                       Deep = c(-200,-300,-400,-500))                        # Create combinations of max and min depths
 
 limit <- function(Shallow, Deep) {
   
-labels <- data.frame("Deep" = abs(Deep), "Shallow" = abs(Shallow))
+  labels <- data.frame("Deep" = abs(Deep), "Shallow" = abs(Shallow))
   
-Shape <- filter(cells, between(Elevation, Deep, Shallow)) %>%
-  st_union() %>%
-  st_sf(labels)
-  }                                      # Filter the bathymetry by a max and min depth combo and turn to a polygon
+  Shape <- filter(cells, between(Elevation, Deep, Shallow)) %>%
+    st_union() %>%
+    st_sf(labels)
+}                                      # Filter the bathymetry by a max and min depth combo and turn to a polygon
 
 Choices <- future_map2(combos$Shallow, combos$Deep, .f=limit) %>% 
   rbindlist() %>%
@@ -97,7 +81,5 @@ choice_plot <- ggplot() +
   theme(axis.text = element_blank()) +
   NULL
 
-#ggsave("./Figures/bathymetry/Depth choices.png", plot = last_plot(), scale = 1, width = 24, height = 20, units = "cm", dpi = 500)
 ggsave_map("./Figures/bathymetry/Depth choices.png", choice_plot)
 
-    

@@ -30,12 +30,12 @@ Bathymetry <- st_as_sf(Bathymetry, as_points = F, merge = F)  %>%           # Co
 Domains <- mutate(Bathymetry, Shore = ifelse(between(Elevation, -400, -60) & Shore_dist > 20000, "Offshore",
                                     ifelse(Elevation > -60 | Shore_dist < 20000, "Inshore", NA))) %>% 
   drop_na() %>% 
-  st_join(Region_mask) %>%                                 # Limit the area of interest 
+  st_join(Region_mask) %>%                                                  # Limit the area of interest 
   drop_na() %>% 
-  mutate(Area = as.numeric(st_area(.))) %>%                # Measure the size of each cell
+  mutate(Area = as.numeric(st_area(.))) %>%                                 # Measure the size of each cell
   group_by(Shore) %>% 
-  summarise(Elevation = mean(Elevation),                   # nb, Inshore mean depth is deeper than 60 m because of deep areas close to shore.
-            area = sum(Area))                              # Cheat way to union cells by group and get measurements 
+  summarise(Elevation = mean(Elevation),                                    # nb, Inshore mean depth is deeper than 60 m because of deep areas close to shore.
+            area = sum(Area))                                               # Cheat way to union cells by group and get measurements 
 saveRDS(Domains, "./Objects/Domains.rds")
 
 #### Plot ####

@@ -16,8 +16,8 @@ rm(nc_raw)                                                                      
 
 #### Extract Area ####
 
-#S <- nrow(nc_lat)*(7.8/9) ; W <- length(nc_lon)*1/2 ; E <- length(nc_lon)*4.7/6    # For Polar projection
-S <- nrow(nc_lat)*(7.8/9) ; W <- length(nc_lon)*1/2 ; E <- length(nc_lon)*4.3/6     # For Mercatore
+# S <- nrow(nc_lat)*(5/6) ; W <- length(nc_lon)*80/360 ; E <- length(nc_lon)*1/2  # for polar projection
+S <- nrow(nc_lat)*(5/6) ; W <- length(nc_lon)*100/360 ; E <- length(nc_lon)*1/2    # for mercatore projection
 
 Bathymetry <- read_ncdf("./Data/GEBCO_2019.nc", ncsub = cbind(
              start = c(W, S), count =c((E-W+1), (43200 - S +1)))) #%>%

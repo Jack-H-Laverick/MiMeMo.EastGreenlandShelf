@@ -1,29 +1,30 @@
 
 # Average the data pulled from NEMO - MEDUSA for creating decadal maps
-# readRDS("~/Data/MiMeMo/Months")  # Marker so network script can see where the data is coming from
+# readRDS("./Objects/Months.")  # Marker so network script can see where the data is being saved too, it's buried in a function
 
 #### Set up ####
 
-setwd("~/Data/MiMeMo/Months")                                               
 rm(list=ls())                                                               # Wipe the brain
 
-packages <- c("tidyverse", "data.table", "sf", "tictoc")                    # List packages
+packages <- c("MiMeMo.tools", "tidyverse", "data.table", "sf", "tictoc", "furrr") # List packages
 lapply(packages, library, character.only = TRUE)                            # Load packages
-source("~/R scripts/NM.z FUNCTIONS.R")                                        # Load custom functions
+source("./R scripts/@_Region file.R")                                       # Define project region 
+
+plan(multiprocess)                                                          # Instructions for parallel processing
 
 #### Average by decade spatially ####
 
 tic("Creating decadal spatial averages")                                    # Time the operation
   
-SP <- list.files(pattern = ".rds") %>%                                      # Get list of .rds files
-  purrr::map(decadal) %>%                                                   # Read in data, remove unnecessary columns and create a decade column
+SP <- list.files("./Objects/Months/", full.names = T) %>%                   # Get list of NM files
+  future_map(decadal, .progress = TRUE) %>%                                 # Read in data, remove unnecessary columns and create a decade column
   rbindlist() %>%                                                           # Combine dataframes
   mutate(Decade = as.factor(Decade)) %>%                                    # Change decade to factor
   split(., f = list(.$Decade, .$Depth)) %>%                                 # Split into a large dataframe per decade (and depth to help plotting)
-  lapply(strip_ice) %>%                                                     # Remove snow and ice variables from deep data before averaging
-  purrr::map(summarise_sp) %>%                                              # Average the variables per decade
-  purrr::map(reproj) %>%
-  saveRDS("~/Data/MiMeMo/SPATIAL")                                          # Save out spatial file in the folder above WD
+  lapply(strip_ice, dt = T) %>%                                             # Remove snow and ice variables from deep data before averaging
+  lapply(summarise_sp, dt = T) %>%                                          # Average the variables per decade, dt method is faster
+  future_map(reproj, crs = crs, .progress = TRUE) %>%
+  saveRDS("./Objects/SPATIAL.rds")                                          # Save out spatial file in the folder above WD
 toc()                                                                       # Stop timing
-  
+
 # Check NAs are preserved in maps

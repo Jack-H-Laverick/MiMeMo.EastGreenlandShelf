@@ -1,20 +1,21 @@
 
 # Create a spatial grid to bind extracted NM model outputs to, including distance from shore and bathymetry
+# Remember to mount the idrive by typing midrive into the Konsole
 
 #### Set up ####
 
 rm(list=ls())                                                               # Wipe the brain
 
-Tidy_packages <- c("tidyverse", "tictoc", "ncdf4", "pbapply")               # List handy data packages
+Tidy_packages <- c("MiMeMo.tools", "tidyverse", "tictoc", "ncdf4", "pbapply") # List handy data packages
 Geo_packages <- c("rnaturalearth", "sf", "stars", "RANN")                   # List GIS packages
 lapply(c(Tidy_packages, Geo_packages), library, character.only = TRUE)      # Load packages
-source("~/R scripts/NM.z FUNCTIONS.R")
+source("./R scripts/@_Region file.R")                                       # Define project region 
 
 world <- ne_countries(scale = "medium", returnclass = "sf") %>%             # Get a world map
   filter(subregion %in% c("Northern America", "Northern Europe", "Eastern Europe")) %>%
   st_transform(crs = 3035)                                                  # Assign polar projection
 
-nc_bath <- readRDS("~/Data/Bathymetry GEBCO/Polar_Bathymetry_halfres.rds")  # Get bathymetry
+nc_bath <- readRDS("./Objects/Bathymetry_points.rds")  # Get bathymetry
 
 File <- list.files("/mnt/idrive/Science/MS/Shared/CAO/mimemo/clipped_medusa", recursive = TRUE, full.names = TRUE) %>% 
   .[1]                                                                      # Name an example NM file
@@ -24,15 +25,15 @@ Data <- read_ncdf(File)                                                     # Pu
 
 #### Re-crop ALLARC grid ####
 
-nc_raw <- nc_open("~/allarc_coordinates.nc")                                # This is the full grid before Robert cropped it and introduced 0s
+nc_raw <- nc_open("./Data/allarc_coordinates.nc")                           # This is the full grid before Robert cropped it and introduced 0s
 
 LatALLARC <- ncvar_get(nc_raw, "nav_lat")                                   # Pull latitude
 LonALLARC <- ncvar_get(nc_raw, "nav_lon")                                   # Pull longitude
 
-which(LatALLARC == y[1,1] & LonALLARC == x[1,1], arr.ind = TRUE)            # Cut out ALLARC columns which match MiMeMo CROP
-which(LatALLARC == y[1,ncol(y)] & LonALLARC == x[1,ncol(x)], arr.ind = TRUE)# Where in the big grid matches each corner of MiMeMo?
-which(LatALLARC == y[nrow(y),1] & LonALLARC == x[nrow(x),1], arr.ind = TRUE)  
-which(LatALLARC == y[nrow(y), ncol(y)] & LonALLARC == x[nrow(x),ncol(x)], arr.ind = TRUE)
+#which(LatALLARC == y[1,1] & LonALLARC == x[1,1], arr.ind = TRUE)            # Cut out ALLARC columns which match MiMeMo CROP
+#which(LatALLARC == y[1,ncol(y)] & LonALLARC == x[1,ncol(x)], arr.ind = TRUE)# Where in the big grid matches each corner of MiMeMo?
+#which(LatALLARC == y[nrow(y),1] & LonALLARC == x[nrow(x),1], arr.ind = TRUE)  
+#which(LatALLARC == y[nrow(y), ncol(y)] & LonALLARC == x[nrow(x),ncol(x)], arr.ind = TRUE)
 
 crop_lat <- LatALLARC[1025:1259,208:397]                                    # Crop ALLARC to same limit as MiMeMo
 crop_lon <- LonALLARC[1025:1259,208:397]                                    # The dimesions of the new matrices match MiMeMo        
@@ -44,11 +45,11 @@ unique(Space$nc_lat[crop_lat != Space$nc_lat])                              # Lo
 s <- st_as_stars(values) %>%                                                # Pass matrix of extracted variable
   st_as_stars(curvilinear=list(X1 = crop_lon, X2 = crop_lat)) %>%           # Pass coordinate matrices and start the grid is curved
   st_as_sf(as_points = FALSE, merge = FALSE) %>%                            # geom_stars doesn't like a curvilinear grid, convert each cell to an SF polygon
-  st_transform(crs = 3035)                                                  # Reproject
+  st_transform(crs = crs)                                                   # Reproject
 
 ggplot() + geom_sf(data = s, aes(fill = A1), colour = NA) +
   geom_sf(data = world) +
-  coord_sf(xlim = c(6100000, 2800000), ylim = c(7500000, 4400000)) 
+  zoom
   
 #### Convert to a dataframe ####
 
@@ -63,7 +64,10 @@ grid <- crop_lat %>%                                                        # Cr
 closest <- nn2(nc_bath[,c(2,1)], grid[,1:2], k = 1, searchtype = "priority") %>% # Fast nearest neighbour search
   sapply(cbind) %>% as_tibble                                               # Format as dataframe
 
-grid$Bathymetry <- nc_bath[closest$nn.idx,3]                                # Grab the depths by index
+Depths <- nc_bath[["Elevation"]] %>%                                        # Select the depths
+  .[closest$nn.idx]  
+
+grid <- mutate(grid, Bathymetry = Depths)                                   # Add to grid
 
 ggplot(grid, aes(x = Longitude, y = Latitude, colour = Bathymetry)) +       # Check the bathymetry looks believable
   geom_point()
@@ -71,7 +75,7 @@ ggplot(grid, aes(x = Longitude, y = Latitude, colour = Bathymetry)) +       # Ch
 #### Calculate distance from shore for points ####
 
 grid <- st_as_sf(grid, coords = c("Longitude", "Latitude"), crs = 4326, remove = FALSE) %>% # Set dataframe to SF format
-  st_transform(3035) 
+  st_transform(crs) 
 
 dist <- st_distance(grid, world) %>% pbapply(1,min)                         # Calculate distance from point to each polygon, pull the minimum
 grid$Shore_dist <- dist
@@ -79,6 +83,6 @@ grid$Shore_dist <- dist
 ggplot() +                                                                  # Check distances look believable
   geom_sf(data = grid, aes(colour = Shore_dist)) +                   
   geom_sf(data = world) +
-  coord_sf(xlim = c(6100000, 2800000), ylim = c(7500000, 4400000)) 
+  zoom
 
-#saveRDS(grid, file = "~/Data/MiMeMo/Fixed_grid.rds")                        # Save
+saveRDS(grid, file = "./Objects/Fixed_grid.rds")                            # Save

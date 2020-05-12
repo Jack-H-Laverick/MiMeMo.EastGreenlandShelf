@@ -1,33 +1,79 @@
 
-# A full bacth of scripts for MiMeMo 
+## Run batches of R scripts. Handy if you want scripts to run after another finishes while you're away from the machine
 
-# Running this will execute the entire project code.
+#### Set up ####
 
-#### Project exploration ####
-source("~/R scripts/bathymetry DATA WRANGLING.R") # Extract and reformat GEBCO bathymetry
-source("~/R scripts/bathymetry PLOTTING.R")       # View bathymetry in3 ways 
-source("~/R scripts/bathymetry CHOICES.R")        # Create choice maps 
-source("~/R scripts/bathymetry MODEL DOMAIN.R")   # Define model domain 
-source("~/R scripts/MiMeMo Schematic.R")          # Graphic for the model 
+packages <- c("tidyverse", "callr", "tictoc")           # List packages
+lapply(packages, library, character.only = TRUE)        # Load packages
 
-#### Internal model drivers ####
-source("~/R scripts/NM EXTRACTION.R")             # Extract and reformat NEMO - MEDUSA data
-source("~/R scripts/NM TIME SERIES.R")            # Create time series averages
-source("~/R scripts/NM SPATIAL.R")                # Create decadal spatial averages
-source("~/R scripts/NM PLOTTING.R")               # Create the plots
+execute <- function(x) {
+  tic(x)
+  r(function(x) source(x), args = list(x), spinner = TRUE)
+  toc(log = T, quiet = T)
+  
+  usethis::ui_done("{usethis::ui_field(x)} completed. {praise::praise('${Exclamation}!')}")  } # Run an R script in it's own R session and record how long it takes
 
-#### Compartment flows ####
-source("~/R scripts/bounds VC-EXTRACTION.R")      # Extract offshore vertical exchanges
-source("~/R scripts/bounds MAKE TRANSECTS.R")     # Define box boundaries
-source("~/R scripts/bounds DIRECTION EXAMPLE.R")  # Trialling a function
-source("~/R scripts/bounds LABEL TRANSECTS.R")    # Identify flows
-source("~/R scripts/bounds C-Extraction.R")       # Extract currents from NEMO - MEDUSA
-source("~/R scripts/bounds SAMPLE TRANSECTS.R")   # Calculate horizontal flows by box
+#### Batch process scripts ####
 
-#### Fishing ####
-source("~/R scripts/effort gfw DATA WRANGLING.R") # Rework fishing effort
-source("~/R scripts/effort gfw PLOTTING.R")       # Plot fihsing activity
+scripts <- c(                                            # List scripts in the order you want to run them
+   "./R scripts/bathymetry.1 DATA WRANGLING.R",
+   "./R scripts/bathymetry.2 PLOTTING.R",
+   "./R scripts/bathymetry.3 RAYSHADER.R",
+   "./R scripts/bathymetry.4 DOMAIN CHOICES.R",
+   "./R scripts/bathymetry.5 DEFINE DOMAIN.R",
+   
+   "./R scripts/NM.1 GRID.R",
+   "./R scripts/NM.2 EXTRACTION.R",
+   "./R scripts/NM.3 SPATIAL.R",
+  # "./R scripts/NM.4 TIME SERIES.R",             
+  # "./R scripts/NM.5 PLOTTING.R",
+  # "./R scripts/NM.6 LIGHT AND TEMP.R",
+  # 
+  # "./R scripts/detritus.1 GRID.R",
+  # "./R scripts/detritus.2 EXTRACTION.R",
+  # ###"./R scripts/detritus.3 SPATIAL.R",
+  # "./R scripts/detritus.4 TIME SERIES.R",             
+  # "./R scripts/detritus.5 PLOTTING.R",
+  # 
+  # "./R scripts/flows.1 VC-EXTRACTION.R",
+  # "./R scripts/flows.2 MAKE TRANSECTS.R",
+  # "./R scripts/flows.3 LABEL TRANSECTS.R",
+  # "./R scripts/flows.4 SAMPLE PERIMETER.R",
+  # "./R scripts/flows.5 SAMPLE FLUXES.R",
+  # "./R scripts/flows.6 VOLUME CHECK.R",
+  # "./R scripts/flows.7 PLOT EXCHANGES.R",
+  # 
+  # "./R scripts/atmosphere.1 EXTRACTION.R",
+  # 
+  # "./R scripts/spm.1 EXTRACTION.R",
+  # 
+  # "./R scripts/fish.1 FAO REGIONS.R",
+  # ###"./R scripts/fish.2 ICES.R",
+  # "./R scripts/fish.3 GFW WRANGLING.R",
+  # ###  "./R scripts/fish.4 GFW FRESH FIGURE.R",
+  # ###"./R scripts/fish.5 GFW PLOTTING.R",
+  # 
+  # # "./R scripts/sediment.1 TIDES.R",
+  # # "./R scripts/sediment.2 WAVES.R",
+  # "./R scripts/sediment.1 GRID WATER.R",
+  # "./R scripts/sediment.2 CROP SINMOD.R", 
+  # "./R scripts/sediment.2 CROP WAVES.R",
+  # "./R scripts/sediment.3 WATER TS.R",
+  # "./R scripts/sediment.4 SHEARSTRESS.R",
+  # "./R scripts/sediment.4 GRID.R",
+  # "./R scripts/sediment.5 RANDOM FOREST.R"
+) %>% 
+  map(execute)
 
-#### Sediment ####
-source("~/R scripts/sediment DATA WRANGLING.R")   # Rework sediment data
-source("~/R scripts/sediment PLOTTING.R")         # Plot sediment data
+#### Plot run times ####
+
+timings <- tic.log(format = F) %>%                                                     # Get the log of timings
+  lapply(function(x) data.frame("Script" = x$msg, Minutes = (x$toc - x$tic)/60)) %>%   # Get a dataframe of scripts and runtimes in minutes
+  bind_rows() %>%                                                                      # Get a single dataframe
+  separate(Script, into = c(NA, "Script"), sep = "/R scripts/") %>% 
+  separate(Script, into = c("Type", NA, NA), sep = "[.]", remove = F) %>% 
+  mutate(Script = factor(Script, levels = Script[order(rownames(.), decreasing = T)])) # Order the scripts
+saveRDS(timings, "./Objects/Run time.rds")
+
+source("./R scripts/@_Script runtimes.R")                                              # Plot run times
+
