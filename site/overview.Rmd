@@ -1,5 +1,6 @@
 ---
 output: html_document
+pagetitle: "Overview"
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -37,7 +38,7 @@ The widget below illustrates the hierarchy for MiMeMo scripts. It's interactive,
 
 ```{r code relations, echo = FALSE, eval = TRUE, warning= FALSE}
 
-network <- readRDS("./Objects/network.rds")
+network <- readRDS("../Objects/network.rds")
 
 #### Build network widget ####
 
@@ -80,7 +81,7 @@ visNetwork(network[[2]], network[[1]], width = "100%", height = "800") %>% # Bui
 
 ```{r code runtimes, echo = FALSE, eval = TRUE, warning= FALSE, out.width ="100%", gif.asp = 1, dpi = 800}
 
-timings <- readRDS("./Objects/Run time.rds")
+timings <- readRDS("../Objects/Run time.rds")
 
 #### Cool circular bar plot ####
 

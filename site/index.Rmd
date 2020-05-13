@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
+<img src='man/figures/banner.png' align="centre" width="100%" />
 
 # MiMeMo.EastGreenlandShelf
 
@@ -37,7 +38,7 @@ The widget below illustrates the hierarchy for MiMeMo scripts. It's interactive,
 
 ```{r code relations, echo = FALSE, eval = TRUE, warning= FALSE}
 
-network <- readRDS("./Objects/network.rds")
+network <- readRDS("../Objects/network.rds")
 
 #### Build network widget ####
 
@@ -80,7 +81,7 @@ visNetwork(network[[2]], network[[1]], width = "100%", height = "800") %>% # Bui
 
 ```{r code runtimes, echo = FALSE, eval = TRUE, warning= FALSE, out.width ="100%", gif.asp = 1, dpi = 800}
 
-timings <- readRDS("./Objects/Run time.rds")
+timings <- readRDS("../Objects/Run time.rds")
 
 #### Cool circular bar plot ####
 
@@ -150,7 +151,7 @@ ggplot(data, aes(x=as.factor(id), y=value, fill=group)) +       # Note that id i
 
 ```
 
-## Script Objectives
+## Script Objectives {.tabset}
 
 In the future I plan to detail blow by blow what exactly each script does. This will likely take the form of a dropdown list of vignettes on this website. As there are about 40 scripts at the moment this isn't going to happen immediately. For now this section is here to briefly mention the purpose of each script.
  
