@@ -44,12 +44,11 @@ files <- paste0("./Objects/Months/NM.", seq(1:12), ".2000.rds")
 year <- map_dfr(files, ~{
   readRDS(.x) %>% 
     select(Ice_conc, Month, Shore)}) %>% 
- 
-  year2 <- drop_na(year)
+  drop_na()
 
 names(month.abb) <- seq(1:12) # Give months numeric name to work in faect
 
-ggplot(filter(year2, Shore == "Inshore"), aes(Ice_conc)) + stat_ecdf(geom = "line") +
+ggplot(filter(year, Shore == "Inshore"), aes(Ice_conc)) + stat_ecdf(geom = "line") +
   theme_minimal() +
   labs(y = "Cumulative density", x = "Sea Ice Concentration", 
        title = "Inshore zone",
@@ -61,7 +60,7 @@ ggplot(filter(year2, Shore == "Inshore"), aes(Ice_conc)) + stat_ecdf(geom = "lin
 
 #ggsave("Ice thesholds in.png", width = 18, height = 10, units = "cm", dpi = 500)
 
-ggplot(filter(year2, Shore == "Offshore"), aes(Ice_conc)) + stat_ecdf(geom = "line") +
+ggplot(filter(year, Shore == "Offshore"), aes(Ice_conc)) + stat_ecdf(geom = "line") +
   theme_minimal() +
   labs(y = "Cumulative density", x = "Sea Ice Concentration", 
        title = "Offshore zone",
