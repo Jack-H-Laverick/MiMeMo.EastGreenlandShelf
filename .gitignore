@@ -5,6 +5,6 @@
 /results
 /StrathE2E
 /Analyses
+/R scripts/R-chive
 *.png
-*.html
 .Rproj.user
