@@ -13,9 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-<img src='man/figures/banner.png' align="centre" width="100%" />
-
-# MiMeMo.EastGreenlandShelf
+<img src='man/figures/Rayshade.png' align="centre" width="100%" />
 
 Code to process raw data from the East Greenland Shelf for StrathE2E Polar
 
