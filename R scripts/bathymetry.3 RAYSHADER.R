@@ -44,7 +44,7 @@ mat %>%
   add_shadow(montshadow, 0.5) %>%
   add_shadow(montamb) %>%
   
-  plot_3d(mat, zscale = 10, fov = 0, theta = 60, phi = 30, 
+  plot_3d(mat, zscale = 10, fov = 0, theta = -120, phi = 30, 
           windowsize = c(1840, 1150), zoom = 0.55,
           water = TRUE, waterdepth = 0, wateralpha = 0.5, watercolor = "lightblue",
           waterlinecolor = "white", waterlinealpha = 0.5)
