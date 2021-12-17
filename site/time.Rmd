@@ -1,0 +1,107 @@
+---
+title: "Script Runtimes"
+date: "last updated: 12/02/2021"
+output:
+  html_document:
+    css: style.css
+
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  out.width = "100%",
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE,
+  fig.asp = 1)
+
+library(tidyverse) 
+
+```
+
+The figure below illustrates the run times for each of the MiMeMo scripts. Scripts are loosely classified into families - *bathymetry* - *fish* - *flows* - *NM* - *Sediment* - *StrathE2E*. These can all be run from a master script. The times are saved out automatically for batch processing, but this page accesses a saved record as I don't always run everything at once. Most data processing is fast (minutes) however processing NEMO-MEDUSA model output can take hours. The constraint on time is transferring the data from the idrive to the machine creating the summaries. For a student with a laptop and an external hard drive this can take all day. For my desktop wired to the server it's 2-3 hours. When files are stored locally on my machine it indicates all the data could be process in 20 minutes. 
+
+```{r code runtimes, eval = TRUE}
+
+timings <- readRDS("../Objects/All run times.rds") %>% 
+  separate(Type, into = c(NA, "Type"), sep = "/")                             # Drop script folder
+
+#### Cool circular bar plot ####
+
+#Create dataset
+data <- data.frame(
+  individual= timings$Script,
+  group= timings$Type,
+  value= timings$Minutes) %>% 
+  separate(individual, into = c(NA, "individual",NA), sep = "[.]") # Drop leading script family for labelling bars.
+
+# Set a number of 'empty bar' to add at the end of each group
+empty_bar <- 3
+to_add <- data.frame( matrix(NA, empty_bar*nlevels(data$group), ncol(data)) )
+colnames(to_add) <- colnames(data)
+to_add$group <- rep(levels(data$group), each=empty_bar)
+data <- rbind(data, to_add)
+data <- data %>% arrange(group)
+data$id <- seq(1, nrow(data))
+
+# Get the name and the y position of each label
+label_data <- data
+number_of_bar <- nrow(label_data)
+angle <- 90 - 360 * (label_data$id-0.5) /(number_of_bar+1)     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0). I also add a bar for the y axis labels.
+label_data$hjust <- ifelse( angle < -90, 1, 0)
+label_data$angle <- ifelse(angle < -90, angle+180, angle)
+
+# prepare a data frame for base lines
+base_data <- data %>% 
+  group_by(group) %>% 
+  summarize(start=min(id), end=max(id)) %>% 
+  rowwise() %>% 
+  mutate(title=mean(c(start, end)))
+
+# Make the plot
+ggplot(data, aes(x=as.factor(id), y=value, fill=group)) +       # Note that id is a factor. If x is numeric, there is some space between the first bar
+  
+  geom_bar(aes(x=as.factor(id), y=value, fill=group), stat="identity", alpha=0.5, colour = NA) +   # Begin plot
+  # Add axis marks
+  annotate("rect", xmin = 0.5, ymin = 0, xmax = max(data$id) + 1.5, ymax = 60, colour = "white", alpha=0.1, fill = "cornflowerblue") +
+  annotate("rect", xmin = 0.5, ymin = 60, xmax = max(data$id) + 1.5, ymax = 120, colour = "white", alpha=0) +
+  annotate("rect", xmin = 0.5, ymin = 120, xmax = max(data$id) + 1.5, ymax = 180, colour = "white", alpha=0.1, fill = "cornflowerblue") +
+  annotate("rect", xmin = 0.5, ymin = 180, xmax = max(data$id) + 1.5, ymax = 240, colour = "white", alpha=0) +
+  annotate("rect", xmin = 0.5, ymin = 240, xmax = max(data$id) + 1.5, ymax = 300, colour = "white", alpha=0.1, fill = "cornflowerblue") +
+  # Add text labels for axis marks
+  annotate("text", x = rep(max(data$id)+ 1, 5), y = c(60, 120, 180, 240, 300), 
+           label = c("1", "2", "3", "4", "5") , color="grey", size=3 , angle=0, fontface="bold", hjust= 0.5) +
+  geom_bar(aes(x=as.factor(id), y=value, fill=group), colour = "black", size = 0.3, stat="identity") +
+scale_fill_manual(values = c("bathymetry" = "#ff8000",
+                             "fish" = "#00ffff",
+                             "flows" = "#0993de",    
+                             "nemo-medusa" = "#FFFFFF",       
+                             "saltless" = "#ffea09",   
+                             "strathE2E" = "#aba6a6")) +
+  ylim(-300,600) +          # More - creates more space in the centre, if a bar is larger than max it won't display
+  annotate("text", x = max(data$id), y = 400, label = paste0("Total project run time: ", round(sum(data$value, na.rm = T)/60, digits = 2), " hours"), size = 3, hjust = 0) +
+  theme_minimal() +
+  theme(legend.position = c(0.5, 0.5),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.margin = unit(c(-4, -2.5,-2.5,-2.5), "cm")
+       ) +
+  coord_polar() + 
+  geom_text(data=label_data, aes(x=id, y=value+45, label=individual, hjust=hjust), color="black", fontface="bold",alpha=0.6, size=2.5, angle= label_data$angle, inherit.aes = FALSE ) +
+  # Add base line information
+  geom_segment(data=base_data, aes(x = start, y = -30, colour = group, xend = end, yend = -30), 
+               size=3.5 , inherit.aes = FALSE, show.legend = FALSE)  +
+scale_colour_manual(values = c("bathymetry" = "#ff8000",
+                             "fish" = "#00ffff",
+                             "flows" = "#0993de",    
+                             "nemo-medusa" = "#FFFFFF",       
+                             "saltless" = "#ffea09",   
+                             "strathE2E" = "#aba6a6")) +
+    labs(fill = NULL) +
+ # labs(caption = paste0("Total project run time: ", round(sum(data$value, na.rm = T)/60, digits = 2), " hours")) +
+  NULL
+
+
+```

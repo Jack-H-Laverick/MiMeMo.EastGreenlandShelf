@@ -1,0 +1,59 @@
+---
+output:
+  html_document:
+    css: style.css
+---
+
+<style>
+.parallax {
+  /* The image used */
+  background-image: url('man/figures/Rayshade.png');
+
+  /* Set a specific height */
+  height: 700px;
+
+  /* Create the parallax scrolling effect */
+  background-attachment: fixed;
+  background-position: 50% 15%;
+  background-repeat: no-repeat;
+  background-size: 920px 575px;
+}
+</style>
+
+<!-- Container element -->
+<div class="parallax">
+</div>
+
+# MiMeMo.BarentsSea
+
+This site details the parameterisation of StrathE2E*polar* for the Barents Sea, as part of MiMeMo. From here you can access different types of documentation.
+
+### Sources
+
+Details the external data sources contributing to the parameterisation. 
+
+### Code
+
+Details the dependencies between, and run times of, the R scripts processing original data sources. The dependencies are updated every time the site is built. The run times must be saved out after batch-processing the project code.
+
+### Checks
+
+Collects the visual data checks performed during data processing. This page allows descriptions to accompany each of the checks. The checks are imported from the project every time the site is built.
+
+### Notes
+
+Details the reasoning behind choices made during the development of the project pipeline. This includes things like defining the geographic extent of the model domain, and accommodating deep convection. These notes are cached to speed up the rendering of the site.
+
+### Greenland
+
+Provides a link to the sister site for the East Greenland Shelf parameterisation of StrathE2E*polar*.
+
+### MiMeMo.tools   <img src='man/tools.png' />
+
+Links to the pkgdown site of the R package produced during MiMeMo to streamline data extraction.
+
+### nemomedusR   <img src='man/nm.png' />
+
+Links to the pkgdown site of the R package produced during MiMeMo to summarise nemomedusR model output.
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>

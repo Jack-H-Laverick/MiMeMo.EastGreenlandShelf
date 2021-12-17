@@ -1,0 +1,37 @@
+---
+title: "Estimating freshwater N concentrations"
+author: "Jack H Laverick, University of Strathclyde"
+date: "`r format(Sys.time(), '%A %d %b')`"
+output: html_document
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = 'center')
+library(MiMeMo.tools) 
+library(furrr)
+plan(multisession)                                                          # Choose the method to parallelise by with furrr
+
+```
+
+
+## Real world data
+
+Wadham et al. 2016, Sources, cycling and export of nitrogen on the Greenland Ice Sheet provides data over the course of a melt cycle in 2012 into the Watson river. This is outside of the model domain, but it is the best data I could find.  There was near continuous sampling of flow rate, and NH4 and NH3 concentrations. The authors did not respond to my emails, so I extracted the data using webplot digitizer from figure 2 and supplementary figure 5. I imported the time series into R and summarised the data as the average daily flow rates and N concentrations to smooth through any possible error. I interpolated to complete the time series for the few days with unpaired data after my digitisation of the data.
+
+I fitted a model for exponential decay of each nitrogen source against freshwater discharge. 
+
+$NO_{3} \mid NH_{4} = a * (1-b)^{Discharge} \tag{1}$ 
+
+## Prediction
+
+To predict the N concentrations in the model domain I tried using the freshwater input data used to force NEMO-MEDUSA. However, this freshwater input is distributed over multiple pixels offshore, reducing the flow rate per pixel to maintain the mass of water introduced. This resulted in unrealistically low flow rates for the purposes of the model based on data from Watson river. Conversely, totaling up all of the freshwater introduced into the model domain made for flow rates which were unrealistically large, because I was comparing the entire NE coastline to a single river. The fix has been to correct for catchment area size. 
+
+Rignot and Mouginot 2012, Ice flow in Greenland for the International Polar Year 2008–2009 contains data on the catchment area for glaciers larger than 1.5 km across in the supplementary material. The total catchment area for NE glaciers in their list is 358,395 km^2^. Wadham et al. describe their runoff station as being downstream of the Leverett glacier, however looking at their map (Figure 1) it is apparent the location of the discharge data is after two confluences connected to the catchment of the Russsell Glacier. Rignot and Mouginot list two glaciers with the correct coordinates that have terminii upstream of the sampling station "Russell Gletscher" and "Unnamed sotuh Russell". The relationship from above is therefore for a catchment area of 7,208 + 9,930 km^2^. This is 21 times smaller than the catchment area of the NE shelf.
+
+Or, you can think of it like 
+
+equation (1) uses a flow rate of m^3^.S^-1^.17,138 km^2^.
+Our data for NEMO-MEDUSA is m^3^.S^-1^.358,395 km^2^. 
+
+Dividing by 21 scales the units for the NE shelf to match those used in the relationship derived from the Watson river. After this correction the flow rates from the model domain appear comparable to those from the field observations. This also allows us to use the freshwater projections to predict changes to future ammonia and nitrate concentrations. If we didn't control for this the amount of nitrogen added to the system would follow increasing snow melt without any chance for dilution.

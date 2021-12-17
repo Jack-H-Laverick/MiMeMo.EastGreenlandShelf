@@ -1,0 +1,42 @@
+name: "Barents Sea"
+output_dir: "../docs"
+url: https://jack-h-laverick.github.io/MiMeMo.BarentsSea/
+
+home:
+  name: "Barents Sea"
+  title: Barents Sea
+
+navbar:
+  title: "Barents Sea"
+  type: inverse
+  left:
+   - icon: fa-home
+     href: index.html
+   - icon: fa-cart-arrow-down
+     text: "Sources"
+     href: Sources.html
+   - icon: fa-project-diagram
+     text: "Code"
+     menu:
+      - text: "Dependencies"
+        href: network.html
+      - text: "Run times"
+        href: time.html
+   - icon: fa-check-square
+     text: "Checks"
+     href: Checks.html
+   - icon: fa-clipboard
+     text: "Notes"
+     href: Notes.html
+
+  right:
+   - text: "Greenland"
+     href: https://jack-h-laverick.github.io/MiMeMo.EastGreenlandShelf/
+   - icon : fa-cube fa-lg
+     text: "MiMeMo.tools"
+     href: https://jack-h-laverick.github.io/MiMeMo.tools/
+   - icon : fa-cube fa-lg
+     text: "nemomedusR"
+     href: https://jack-h-laverick.github.io/nemomedusR/
+   - icon: fa-github-square
+     href: https://github.com/Jack-H-Laverick/MiMeMo.BarentsSea
