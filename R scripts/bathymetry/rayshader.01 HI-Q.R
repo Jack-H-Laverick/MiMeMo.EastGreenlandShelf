@@ -47,7 +47,7 @@ tic()
 render_highquality(print_scene_info = T, parallel = TRUE, lightintensity = 0, samples = 1500, filename = "rayshade-hi.png", 
                    scene_elements = bind_rows(rayrender::sphere(z = 0, y = 1750, x = 600, radius = 50,
                                                   material = rayrender::light(color = "white", intensity = 4500)),
-                                              rayrender::text3d(label = "East Greenland Shelf", angle = c(-30, 240, 0), z = 500, y = 800, x = -650, 
+                                              rayrender::text3d(label = "East Greenland Shelf", angle = c(30, 240, 0), z = 500, y = 800, x = -650, 
                                                   text_height = 150, material = rayrender::light(color = "white", intensity = 100))),  
                    clamp_value = 2, aperture = 120, # Bigger aperture, more blur
                    min_variance = 0)
