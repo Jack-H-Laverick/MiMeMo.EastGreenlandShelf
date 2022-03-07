@@ -78,8 +78,7 @@ My_Stress <- readRDS("./Objects/Habitat disturbance.rds") %>%
   arrange(Month)                                                            # Arrange to match template
 
 My_Waves <- readRDS("./Objects/Significant wave height.rds") %>%  #*2000 - 2010   
-  arrange(Month) %>%                                                        # Arrange to match template
-  replace_na(list(Waves = 0))
+  arrange(Month)                                                            # Arrange to match template
 
 #### Create new file ####
 
