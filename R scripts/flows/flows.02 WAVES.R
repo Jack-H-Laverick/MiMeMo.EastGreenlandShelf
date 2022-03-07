@@ -23,7 +23,8 @@ values <- exact_extract(waves, domains, fun = 'mean') %>%                   # Ex
   mutate(Date = as.POSIXct(Date, format = "%Y.%m.%d.%H.%M.%S"),             # Format as date
          Month = lubridate::month(Date)) %>%                                # Extract month
   group_by(Month) %>% 
-  summarise(Waves = mean(Waves))                                            # Mean by month
+  summarise(Waves = mean(Waves)) %>%                                        # Mean by month
+  replace_na(list(Waves = 0))
 
 saveRDS(values, "./Objects/Significant wave height.rds")
 
