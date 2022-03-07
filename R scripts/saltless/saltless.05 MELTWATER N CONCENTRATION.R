@@ -82,4 +82,4 @@ ggplot(Total) +
   geom_line(aes(x = Date, y = pred_NH4)) +
   theme_minimal()
 
-saveRDS(select(Total, -c(Runoff, Discharge, Y)), "./Objects/River N.rds")
+saveRDS(select(Total, Month, Year, Ammonia = pred_NH4, Nitrate = pred_NO3, Date), "./Objects/River nitrate and ammonia.rds")

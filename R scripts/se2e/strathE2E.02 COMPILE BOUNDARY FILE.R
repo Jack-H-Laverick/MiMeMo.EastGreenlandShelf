@@ -23,11 +23,11 @@ My_boundary_data<- readRDS("./Objects/Boundary measurements.rds") %>%           
 
 My_DIN_fix <- readRDS("./Objects/Ammonia to DIN.rds")
 
-My_river_N <- readRDS("./Objects/River N.rds") %>% 
+My_river_N <- readRDS("./Objects/River nitrate and ammonia.rds") %>% 
   filter(between(Year, 2011, 2019)) %>%                                                      # Limit to reference period
   group_by(Month) %>%                                                                        # Average across years
-  summarise(Ammonia = mean(pred_NH4, na.rm = T),
-            Nitrate = mean(pred_NO3, na.rm = T)) %>% 
+  summarise(Ammonia = mean(Ammonia, na.rm = T),
+            Nitrate = mean(Nitrate, na.rm = T)) %>% 
   ungroup() %>% 
   arrange(Month)                                                                             # Order months ascending
   
